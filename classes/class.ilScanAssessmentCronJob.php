@@ -11,6 +11,9 @@ ilScanAssessmentCronPlugin::getInstance()->includeClass('log/class.ilScanAssessm
 class ilScanAssessmentCronJob extends ilCronJob
 {
 
+	/**
+	 * @var ilScanAssessmentCronLog
+	 */
 	protected $log;
 	
 	/**
@@ -91,6 +94,19 @@ class ilScanAssessmentCronJob extends ilCronJob
 				if(ilScanAssessmentCronPlugin::getInstance()->acquireLock())
 				{
 					$this->log->info('Created lock file: ' . ilScanAssessmentCronPlugin::getInstance()->getLockFilePath());
+					/**
+					 * @var $ilDB ilDB
+					 */
+					global $ilDB;
+
+					$scan_tests = array();
+					$res = $ilDB->query('SELECT * FROM pl_scas_test_config WHERE active = 1');
+					while($row = $ilDB->fetchAssoc($res))
+					{
+						$scan_tests[] = $row['obj_id'];
+					}
+					$this->log->debug(sprintf('Found: %s active scanAssessments checking if not analysed images exists.', count($scan_tests)));
+					$this->checkingForNewImages($scan_tests);
 				}
 				else
 				{
@@ -114,11 +130,11 @@ class ilScanAssessmentCronJob extends ilCronJob
 			{
 				if(ilScanAssessmentCronPlugin::getInstance()->releaseLock())
 				{
-					$this->log->info('Removed lock file: ' . ilScanAssessmentCronPlugin::getInstance()->getLockFilePath() . '.');
+					$this->log->debug('Removed lock file: ' . ilScanAssessmentCronPlugin::getInstance()->getLockFilePath() . '.');
 				}
 				else
 				{
-					$this->log->info('No lock to remove: ' . ilScanAssessmentCronPlugin::getInstance()->getLockFilePath() . '.');
+					$this->log->debug('No lock to remove: ' . ilScanAssessmentCronPlugin::getInstance()->getLockFilePath() . '.');
 				}
 			}
 			catch(ilException $e)
@@ -135,6 +151,29 @@ class ilScanAssessmentCronJob extends ilCronJob
 		$result->setStatus(ilCronJobResult::STATUS_OK);
 		$this->log->info('ScanAssessment Cronjob finished.');
 		return $result;
+	}
+
+	/**
+	 * @param $test_ids
+	 */
+	protected function checkingForNewImages($test_ids)
+	{
+		require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ScanAssessment/classes/class.ilScanAssessmentFileHelper.php';
+		foreach($test_ids as $key => $id)
+		{
+			$this->log->debug(sprintf('Checking folder for test %s.', $id));
+			$file_handler = new ilScanAssessmentFileHelper($id);
+			$found = $file_handler->doFilesExistsInDirectory($file_handler->getScanPath());
+			if($found)
+			{
+				$this->log->info(sprintf('Found new files to analyse for test %s.', $id));
+				//Todo start analysing new files here
+			}
+			else
+			{
+				$this->log->debug(sprintf('Found no new files to analyse for test %s.', $id));
+			}
+		}
 	}
 
 	/**
