@@ -1,0 +1,11 @@
+<!-- language file start -->
+scasc_title#:#Scan Assessment Cronjob
+threshold_value#:#Value
+threshold_value_info#:#Please enter an integer value.
+threshold_unit#:#Unit
+threshold_unit_info#:#Please choose the desired unit.
+threshold_unit_days#:#Day(s)
+threshold_unit_weeks#:#Week(s)
+threshold_unit_months#:#Month(s)
+threshold_unit_years#:#Year(s)
+plugin_not_installed_or_activated#:#ScanAssessment Plugin not installed or not activated!
