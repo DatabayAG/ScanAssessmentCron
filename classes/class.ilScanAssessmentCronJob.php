@@ -105,7 +105,7 @@ class ilScanAssessmentCronJob extends ilCronJob
 					{
 						$scan_tests[] = $row['obj_id'];
 					}
-					$this->log->debug(sprintf('Found: %s active scanAssessments checking if not analysed images exists.', count($scan_tests)));
+					$this->log->debug(sprintf('Found: %s active scanAssessments checking if non analysed images exists.', count($scan_tests)));
 					$this->checkingForNewImages($scan_tests);
 				}
 				else
@@ -130,7 +130,7 @@ class ilScanAssessmentCronJob extends ilCronJob
 			{
 				if(ilScanAssessmentCronPlugin::getInstance()->releaseLock())
 				{
-					$this->log->debug('Removed lock file: ' . ilScanAssessmentCronPlugin::getInstance()->getLockFilePath() . '.');
+					$this->log->info('Removed lock file: ' . ilScanAssessmentCronPlugin::getInstance()->getLockFilePath() . '.');
 				}
 				else
 				{
@@ -149,7 +149,7 @@ class ilScanAssessmentCronJob extends ilCronJob
 		$result = new ilCronJobResult();
 		$result->setMessage('Finished cron job task.');
 		$result->setStatus(ilCronJobResult::STATUS_OK);
-		$this->log->info('ScanAssessment Cronjob finished.');
+		$this->log->info('...ScanAssessment Cronjob finished.');
 		return $result;
 	}
 
@@ -159,20 +159,25 @@ class ilScanAssessmentCronJob extends ilCronJob
 	protected function checkingForNewImages($test_ids)
 	{
 		require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ScanAssessment/classes/class.ilScanAssessmentFileHelper.php';
+		require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ScanAssessment/classes/scanner/class.ilScanAssessmentScanProcess.php';
+
 		foreach($test_ids as $key => $id)
 		{
-			$this->log->debug(sprintf('Checking folder for test %s.', $id));
+			$this->log->debug(sprintf('Checking folder for test %s...', $id));
 			$file_handler = new ilScanAssessmentFileHelper($id);
-			$found = $file_handler->doFilesExistsInDirectory($file_handler->getScanPath());
+			$found	= $file_handler->doFilesExistsInDirectory($file_handler->getScanPath());
 			if($found)
 			{
 				$this->log->info(sprintf('Found new files to analyse for test %s.', $id));
-				//Todo start analysing new files here
+				$file_helper = new ilScanAssessmentFileHelper($id);
+				$process = new ilScanAssessmentScanProcess($file_helper, $id);
+				$process->analyse();
 			}
 			else
 			{
 				$this->log->debug(sprintf('Found no new files to analyse for test %s.', $id));
 			}
+			$this->log->debug(sprintf('...checking folder for test %s done.', $id));
 		}
 	}
 
@@ -213,6 +218,9 @@ class ilScanAssessmentCronJob extends ilCronJob
 		parent::addCustomSettingsToForm($a_form);
 	}
 
+	/**
+	 * @return bool
+	 */
 	protected function checkPreRequirements()
 	{
 		$scan_assessment_plugin_path = 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ScanAssessment/classes/class.ilScanAssessmentPlugin.php';

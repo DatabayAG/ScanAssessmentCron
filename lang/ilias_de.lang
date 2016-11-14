@@ -1,5 +1,6 @@
 <!-- language file start -->
 scasc_title#:#Scan Assessment Cronjob
+scasc_desc#:#Scan Assessment Cronjob
 threshold_value#:#Wert
 threshold_value_info#:#Bitte tragen Sie hier einen ganzzahligen Wert ein.
 threshold_unit#:#Einheit

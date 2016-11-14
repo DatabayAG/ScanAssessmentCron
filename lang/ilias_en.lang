@@ -1,5 +1,6 @@
 <!-- language file start -->
 scasc_title#:#Scan Assessment Cronjob
+scasc_desc#:#Scan Assessment Cronjob
 threshold_value#:#Value
 threshold_value_info#:#Please enter an integer value.
 threshold_unit#:#Unit

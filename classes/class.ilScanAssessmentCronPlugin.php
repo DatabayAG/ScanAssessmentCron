@@ -128,7 +128,6 @@ class ilScanAssessmentCronPlugin extends ilCronHookPlugin
 			{
 				return false;
 			}
-
 			return true;
 		}
 		return false;
@@ -170,7 +169,6 @@ class ilScanAssessmentCronPlugin extends ilCronHookPlugin
 				return false;
 			}
 		}
-
 		return true;
 	}
 } 
