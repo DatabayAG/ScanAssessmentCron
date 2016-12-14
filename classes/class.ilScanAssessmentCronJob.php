@@ -4,6 +4,7 @@
 require_once 'Services/Cron/classes/class.ilCronJob.php';
 require_once 'class.ilScanAssessmentCronPlugin.php';
 require_once 'Services/Cron/classes/class.ilCronJobResult.php';
+require_once 'Services/Cron/classes/class.ilCronManager.php';
 ilScanAssessmentCronPlugin::getInstance()->includeClass('log/class.ilScanAssessmentCronLog.php');
 /**
  * Class ilScanAssessmentCronJob
@@ -66,7 +67,7 @@ class ilScanAssessmentCronJob extends ilCronJob
 	 */
 	public function hasCustomSettings()
 	{
-		return true;
+		return false;
 	}
 
 	/**
@@ -166,6 +167,8 @@ class ilScanAssessmentCronJob extends ilCronJob
 			$this->log->debug(sprintf('Checking folder for test %s...', $id));
 			$file_handler = new ilScanAssessmentFileHelper($id);
 			$found	= $file_handler->doFilesExistsInDirectory($file_handler->getScanPath());
+			$this->log->debug(sprintf('Checking files in folder %s.', $file_handler->getScanPath()));
+			ilCronManager::ping($this->getId());
 			if($found)
 			{
 				$this->log->info(sprintf('Found new files to analyse for test %s.', $id));
