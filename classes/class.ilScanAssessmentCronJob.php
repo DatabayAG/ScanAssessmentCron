@@ -5,6 +5,7 @@ require_once 'Services/Cron/classes/class.ilCronJob.php';
 require_once 'class.ilScanAssessmentCronPlugin.php';
 require_once 'Services/Cron/classes/class.ilCronJobResult.php';
 require_once 'Services/Cron/classes/class.ilCronManager.php';
+
 ilScanAssessmentCronPlugin::getInstance()->includeClass('log/class.ilScanAssessmentCronLog.php');
 /**
  * Class ilScanAssessmentCronJob
@@ -109,6 +110,9 @@ class ilScanAssessmentCronJob extends ilCronJob
 					}
 					$this->log->debug(sprintf('Found: %s active scanAssessments checking if non analysed images exists.', count($scan_tests)));
 					$this->checkingForNewImages($scan_tests);
+					$this->log->debug(sprintf('Analysing images is done, starting to detect if pdfs need to be created.'));
+					$this->checkingForPDFCreation($scan_tests);
+
 				}
 				else
 				{
@@ -180,6 +184,50 @@ class ilScanAssessmentCronJob extends ilCronJob
 			else
 			{
 				$this->log->debug(sprintf('Found no new files to analyse for test %s.', $id));
+			}
+			$this->log->debug(sprintf('...checking folder for test %s done.', $id));
+		}
+	}
+
+	/**
+	 * @param $test_ids
+	 * @return bool
+	 */
+	protected function checkingForPDFCreation($test_ids)
+	{
+		require_once 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ScanAssessment/classes/pdf/class.ilScanAssessmentPdfAssessmentBuilder.php';
+		require_once 'Modules/Test/classes/class.ilObjTest.php';
+
+		foreach($test_ids as $key => $id)
+		{
+			$this->log->debug(sprintf('Checking folder for test %s...', $id));
+			$file_handler = new ilScanAssessmentFileHelper($id);
+			$found	= $file_handler->doFilesExistsInDirectory($file_handler->getPdfPath());
+			$this->log->debug(sprintf('Checking files in folder %s.', $file_handler->getPdfPath()));
+			ilCronManager::ping($this->getId());
+			if(! $found)
+			{
+				$this->log->info(sprintf('Found no pdf files for test %s starting creating.', $id));
+				$test = new ilObjTest($id, false);
+				$this->log->info(sprintf('Instantiated test obj with id %s and title %s.', $id, $test->getTitle()));
+				$pdf_builder = new ilScanAssessmentPdfAssessmentBuilder($test);
+				if($test->getFixedParticipants() === 1)
+				{
+					$participants = $test->getInvitedUsers();
+					if(sizeof($participants) > 0)
+					{
+						$pdf_builder->createFixedParticipantsPdf($participants);
+					}
+				}
+				else
+				{
+					$configuration = new ilScanAssessmentUserPackagesConfiguration($id);
+					$pdf_builder->createNonPersonalisedPdf($configuration->getCountDocuments());
+				}
+			}
+			else
+			{
+				$this->log->debug(sprintf('Found pdf files, doing nothing.'));
 			}
 			$this->log->debug(sprintf('...checking folder for test %s done.', $id));
 		}
