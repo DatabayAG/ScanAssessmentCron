@@ -89,7 +89,8 @@ class ilScanAssessmentCronJob extends ilCronJob
 
 		if($this->checkPreRequirements())
 		{
-			$this->log->info('ScanAssessment Plugin installed and activated...');
+			global $ilUser;
+			$this->log->info('ScanAssessment Plugin installed and activated...' . $ilUser->getId());
 			try
 			{
 				if(ilScanAssessmentCronPlugin::getInstance()->acquireLock())
