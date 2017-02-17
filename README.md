@@ -1,6 +1,7 @@
 # ILIAS ScanAssessmentCronPlugin Plugin
 * For ILIAS versions: 5.0.0 - 5.2.999
 * Cron job Plugin for use with the ScanAssessment Plugin
+* You can also deactivate the manual scanning and PDF creation with this plugin
 
 ## Installation Instructions
 1. Clone this repository to <ILIAS_DIRECTORY>/Customizing/global/plugins/Services/Cron/CronHook/ScanAssessmentCron
