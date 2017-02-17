@@ -17,7 +17,7 @@ class ilScanAssessmentCronJob extends ilCronJob
 	 * @var ilScanAssessmentCronLog
 	 */
 	protected $log;
-	
+
 	/**
 	 * Get id
 	 * @return string
@@ -87,11 +87,11 @@ class ilScanAssessmentCronJob extends ilCronJob
 	{
 		$this->log = ilScanAssessmentCronLog::getInstance();
 		$this->log->info('Starting ScanAssessment Cronjob...');
+		$scanned_tests ='';
 
 		if($this->checkPreRequirements())
 		{
-			global $ilUser;
-			$this->log->info('ScanAssessment Plugin installed and activated...' . $ilUser->getId());
+			$this->log->info('ScanAssessment Plugin installed and activated...');
 			try
 			{
 				if(ilScanAssessmentCronPlugin::getInstance()->acquireLock())
@@ -110,9 +110,9 @@ class ilScanAssessmentCronJob extends ilCronJob
 					}
 					$this->log->debug(sprintf('Found: %s active scanAssessments checking if non analysed images exists.', count($scan_tests)));
 					$this->checkingForNewImages($scan_tests);
-					$this->log->debug(sprintf('Analysing images is done, starting to detect if pdfs need to be created.'));
+					$this->log->debug(sprintf('Analysing images is done, starting to detect if PDFs need to be created.'));
 					$this->checkingForPDFCreation($scan_tests);
-
+					$scanned_tests = sprintf('Analysed %s tests for new scans and pdf to create.', count($scanned_tests));
 				}
 				else
 				{
@@ -153,7 +153,7 @@ class ilScanAssessmentCronJob extends ilCronJob
 			$this->log->warn('ScanAssessment Plugin not installed or activated... finishing.');
 		}
 		$result = new ilCronJobResult();
-		$result->setMessage('Finished cron job task.');
+		$result->setMessage('Finished cron job task: '. $scanned_tests);
 		$result->setStatus(ilCronJobResult::STATUS_OK);
 		$this->log->info('...ScanAssessment Cronjob finished.');
 		return $result;
@@ -169,11 +169,11 @@ class ilScanAssessmentCronJob extends ilCronJob
 
 		foreach($test_ids as $key => $id)
 		{
+			ilCronManager::ping($this->getId());
 			$this->log->debug(sprintf('Checking folder for test %s...', $id));
 			$file_handler = new ilScanAssessmentFileHelper($id);
 			$found	= $file_handler->doFilesExistsInDirectory($file_handler->getScanPath());
 			$this->log->debug(sprintf('Checking files in folder %s.', $file_handler->getScanPath()));
-			ilCronManager::ping($this->getId());
 			if($found)
 			{
 				$this->log->info(sprintf('Found new files to analyse for test %s.', $id));
@@ -199,10 +199,10 @@ class ilScanAssessmentCronJob extends ilCronJob
 
 		foreach($test_ids as $key => $id)
 		{
+			ilCronManager::ping($this->getId());
 			$this->log->debug(sprintf('Checking folder for test %s...', $id));
 			$file_handler = new ilScanAssessmentFileHelper($id);
 			$this->log->debug(sprintf('Checking files in folder %s.', $file_handler->getPdfPath()));
-			ilCronManager::ping($this->getId());
 			$test = new ilObjTest($id, false);
 			$this->log->info(sprintf('Instantiated test obj with id %s and title %s.', $id, $test->getTitle()));
 			$pdf_builder = new ilScanAssessmentPdfAssessmentBuilder($test);
