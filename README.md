@@ -1,5 +1,6 @@
 # ILIAS ScanAssessmentCronPlugin Plugin
-* For ILIAS versions: 5.0.0 - 5.1.999
+* For ILIAS versions: 5.0.0 - 5.2.999
+* Cron job Plugin for use with the ScanAssessment Plugin
 
 ## Installation Instructions
 1. Clone this repository to <ILIAS_DIRECTORY>/Customizing/global/plugins/Services/Cron/CronHook/ScanAssessmentCron
